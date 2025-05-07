@@ -9,4 +9,6 @@ public interface TeamService {
     List<Team> getAllTeams();
     Team getTeamById(long id);
     Team createTeam(TeamDTO teamDTO);
+    Team updateTeam(Team updatedTeam);
+    boolean deleteTeam(long id);
 }
