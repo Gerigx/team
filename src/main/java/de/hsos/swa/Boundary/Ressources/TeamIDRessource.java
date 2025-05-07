@@ -2,7 +2,7 @@ package de.hsos.swa.Boundary.Ressources;
 
 import jakarta.ws.rs.Path;
 
-@Path("team/{ID}")
+@Path("teams/{ID}")
 public class TeamIDRessource {
 
 }
