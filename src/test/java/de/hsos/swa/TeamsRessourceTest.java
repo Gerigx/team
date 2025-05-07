@@ -73,13 +73,11 @@ public class TeamsRessourceTest {
     
     @Test
     public void testCreateTeam() {
-        // TeamDTO erstellen
         TeamDTO teamDTO = new TeamDTO();
         teamDTO.setName("Test Team");
         teamDTO.setType(TeamType.TEAM);
         teamDTO.setCategory(TeamCategory.ADULTS);
         
-        // Manager erstellen
         Person manager = new Person();
         manager.setId(1L);
         manager.setName("Manager");

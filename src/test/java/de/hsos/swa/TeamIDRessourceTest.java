@@ -23,7 +23,6 @@ public class TeamIDRessourceTest {
     
     @BeforeEach
     public void setup() {
-        // Test-Team für die Tests erstellen
         Team team = new Team();
         team.setName("Test Team");
         team.setType(TeamType.TEAM);
@@ -46,7 +45,6 @@ public class TeamIDRessourceTest {
             .statusCode(201)
             .extract().response();
         
-        // ID des erstellten Teams abrufen
         Integer idAsInteger = response.path("team.id");
         teamId = idAsInteger.longValue();
         
@@ -142,7 +140,7 @@ public class TeamIDRessourceTest {
             .then()
             .statusCode(204);
         
-        // Überprüfe, ob das Team gelöscht wurde
+        // ist dem del
         given()
             .pathParam("id", teamId)
             .when()

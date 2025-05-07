@@ -123,7 +123,7 @@ public class PersonRepo implements PlayerPassService {
     @Override
     public boolean isPlayerEligibleForTeam(long playerId, long teamId) {
 
-        // regeln, falls alter relevant ist oder so
+        // regeln, falls alter relevant ist oder so, aber das wäre ja eig teil fom entity oder?
         return validatePlayerId(playerId);
         
     }

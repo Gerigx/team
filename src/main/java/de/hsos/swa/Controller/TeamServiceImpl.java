@@ -44,7 +44,7 @@ public class TeamServiceImpl implements TeamService {
                             ,teamDTO.getCategory()
                             ,teamDTO.getManager());
 
-        return teamCatalog.createTeam(team); // Diese Zeile fehlt!
+        return teamCatalog.createTeam(team);
     }
 
 

@@ -45,7 +45,6 @@ import jakarta.ws.rs.core.UriInfo;
 @Consumes(MediaType.APPLICATION_JSON)
 public class TeamsRessource {
     
-    // team service
     @Inject
     private TeamService teamService;
 
@@ -65,10 +64,8 @@ public class TeamsRessource {
              @QueryParam("category") TeamCategory category,
              @Context UriInfo uriInfo) {
          
-         // Teams abrufen
          List<Team> allTeams = teamService.getAllTeams();
-         
-         // Filter anwenden, wenn vorhanden
+
          if (type != null) {
              allTeams = allTeams.stream()
                      .filter(team -> team.getType() == type)
@@ -149,7 +146,6 @@ public class TeamsRessource {
             return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
         }
         
-        // Prüfe auf erforderliche Felder
         if (teamDTO.getName() == null || teamDTO.getName().trim().isEmpty() || 
             teamDTO.getType() == null || 
             teamDTO.getCategory() == null || 

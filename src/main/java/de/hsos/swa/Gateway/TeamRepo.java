@@ -26,6 +26,7 @@ public class TeamRepo implements TeamCatalog {
         initDemoData();
     }
     
+    // demo daten von AI
     private void initDemoData() {
         // Erstelle einige Test-Personen direkt (ohne Dependency auf PersonRepo)
         Person jan = createDemoPerson(1, "Jan", "Steinkamp", Gender.MALE);
@@ -71,7 +72,7 @@ public class TeamRepo implements TeamCatalog {
         createTeam(avengersTeam);
     }
 
-        // Hilfsmethode zum Erstellen von Demo-Personen
+        // Hilfsmethode zum Erstellen von Demo-Personen (auch von AI)
         private Person createDemoPerson(long id, String name, String lastname, Gender gender) {
             Person person = new Person();
             person.setId(id);
@@ -104,12 +105,10 @@ public class TeamRepo implements TeamCatalog {
             team.getManager()
         );
         
-        // Spieler kopieren, falls vorhanden
         if (team.getPlayers() != null && !team.getPlayers().isEmpty()) {
             teamCopy.setPlayers(new HashMap<>(team.getPlayers()));
         }
         
-        // Im Repository speichern
         this.teams.put(team.getId(), team);
         
         return teamCopy;

@@ -50,7 +50,7 @@ public class PersonIDRessource {
         Map<String, Object> response = new HashMap<>();
         response.put("person", person);
         
-        // Links erstellen
+        // Links 
         Map<String, String> links = new HashMap<>();
         links.put("self", uriInfo.getRequestUri().toString());
         links.put("all_persons", uriInfo.getBaseUriBuilder().path("persons").build().toString());
@@ -76,7 +76,6 @@ public class PersonIDRessource {
             return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
         }
         
-        // Prüfe auf erforderliche Felder
         if (person.getName() == null || person.getName().trim().isEmpty() || 
             person.getLastname() == null || person.getLastname().trim().isEmpty() || 
             person.getGender() == null) {
@@ -86,7 +85,6 @@ public class PersonIDRessource {
             return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
         }
         
-        // Prüfe, ob die Person existiert
         Person existingPerson = passService.getPerson(id);
         if (existingPerson == null) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -99,7 +97,7 @@ public class PersonIDRessource {
         Map<String, Object> response = new HashMap<>();
         response.put("person", updatedPerson);
         
-        // Links erstellen
+        // Links 
         Map<String, String> links = new HashMap<>();
         links.put("self", uriInfo.getRequestUri().toString());
         links.put("all_persons", uriInfo.getBaseUriBuilder().path("persons").build().toString());

@@ -28,7 +28,6 @@ import jakarta.ws.rs.core.UriInfo;
 @Path("/persons")
 public class PersonRessource {
         
-    // Person Service
     @Inject
     private PlayerPassService passService;
 
@@ -46,10 +45,8 @@ public class PersonRessource {
             
             @Context UriInfo uriInfo) {
         
-        // Personen abrufen
         List<Person> allPersons = passService.getPersons();
-        
-        // Filter 
+
         if (gender != null) {
             allPersons = allPersons.stream()
                     .filter(person -> person.getGender() == gender)
@@ -123,7 +120,6 @@ public class PersonRessource {
             return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
         }
         
-        // Prüfe auf erforderliche Felder
         if (person.getName() == null || person.getName().trim().isEmpty() || 
             person.getLastname() == null || person.getLastname().trim().isEmpty() || 
             person.getGender() == null) {

@@ -53,7 +53,7 @@ public class TeamIDRessource {
             return RestResponse.status(Response.Status.NOT_FOUND, errorResponse);
         }
         
-        // HATEOAS Links erstellen
+        // Links
         Map<String, Object> response = new HashMap<>();
         response.put("team", team);
         
@@ -61,10 +61,10 @@ public class TeamIDRessource {
         links.put("self", uriInfo.getAbsolutePath().toString());
         links.put("all_teams", uriInfo.getBaseUriBuilder().path(TeamsRessource.class).build().toString());
         
-        // Link zum Aktualisieren des Teams (PUT)
+        // update links
         links.put("update", uriInfo.getAbsolutePath().toString());
         
-        // Link zum Löschen des Teams (DELETE)
+        // dellll
         links.put("delete", uriInfo.getAbsolutePath().toString());
         
         response.put("_links", links);
@@ -83,7 +83,6 @@ public class TeamIDRessource {
             Team updatedTeam,
             @Context UriInfo uriInfo) {
         
-        // Prüfen, ob das Team existiert
         Team existingTeam = teamService.getTeamById(id);
         if (existingTeam == null) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -91,10 +90,8 @@ public class TeamIDRessource {
             return RestResponse.status(Response.Status.NOT_FOUND, errorResponse);
         }
         
-        // ID des Pfads in das zu aktualisierende Team setzen
         updatedTeam.setId(id);
         
-        // Team aktualisieren
         Team result = teamService.updateTeam(updatedTeam);
         if (result == null) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -102,7 +99,7 @@ public class TeamIDRessource {
             return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
         }
         
-        // HATEOAS Links erstellen
+        //links
         Map<String, Object> response = new HashMap<>();
         response.put("team", result);
         
@@ -124,15 +121,13 @@ public class TeamIDRessource {
             @PathParam("id") long id,
             @Context UriInfo uriInfo) {
         
-        // Prüfen, ob das Team existiert
         Team existingTeam = teamService.getTeamById(id);
         if (existingTeam == null) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Team mit ID " + id + " nicht gefunden");
             return RestResponse.status(Response.Status.NOT_FOUND, errorResponse);
         }
-        
-        // Team löschen
+
         boolean deleted = teamService.deleteTeam(id);
         if (!deleted) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -140,7 +135,6 @@ public class TeamIDRessource {
             return RestResponse.status(Response.Status.INTERNAL_SERVER_ERROR, errorResponse);
         }
         
-        // Bei erfolgreicher Löschung: Leere Antwort mit 204 No Content
         return RestResponse.noContent();
     }
 }
