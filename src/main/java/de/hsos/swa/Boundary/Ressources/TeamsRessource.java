@@ -13,6 +13,7 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.jboss.resteasy.reactive.RestResponse;
 
+import de.hsos.swa.Boundary.ACL.TeamDTO;
 import de.hsos.swa.Controller.TeamService;
 import de.hsos.swa.Entity.Person;
 import de.hsos.swa.Entity.Team;
@@ -26,7 +27,10 @@ import jakarta.json.JsonObjectBuilder;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.Context;
@@ -45,60 +49,6 @@ public class TeamsRessource {
     @Inject
     private TeamService teamService;
 
-    @Context
-    private UriInfo uriInfo;
-
-    // Verben
-
-
-
-    /*
-    @GET
-    public Response getAllTeams(
-        @QueryParam("filter[name]") String nameFilter,
-        @QueryParam("filter[category]") String categoryFilter,
-        @QueryParam("page[number]") @DefaultValue("1") int pageNumber,
-        @QueryParam("page[size]") @DefaultValue("10") int pageSize,
-        @QueryParam("include") String include) {
-    
-        try {
-            // 1. Teams abrufen und filtern
-            List<Team> teams = teamService.getAllTeams();
-            
-            // Name filtern
-            if (nameFilter != null && !nameFilter.isEmpty()) {
-                teams = teams.stream()
-                        .filter(t -> t.getName().contains(nameFilter))
-                        .collect(Collectors.toList());            
-            }
-            
-            // Kategorie filtern
-            if (categoryFilter != null && !categoryFilter.isEmpty()) {
-                TeamCategory category = TeamCategory.valueOf(categoryFilter.toUpperCase());
-                teams = teams.stream()
-                        .filter(t -> t.getCategory() == category)
-                        .collect(Collectors.toList());
-            }
-            
-            // 2. Paginierung anwenden
-            PaginationResult<Team> pageResult = applyPagination(teams, pageNumber, pageSize);
-            
-            // 3. JSON-API Response erstellen (ohne manuelle JSON Manipulation)
-            JsonApiResponse<Team> response = new JsonApiResponse<>(
-                pageResult.getItems(),
-                createPaginationLinks(pageResult),
-                createIncludedResources(pageResult.getItems(), include)
-            );
-            
-            return Response.ok(response).build();
-        } catch (IllegalArgumentException e) {
-            // Quarkus Exception Mapping für ungültige Kategorie
-            throw new BadRequestException("Ungültige Team-Kategorie: " + categoryFilter);
-        }
-    }
-
-     */
-
      @GET
      @Operation(summary = "Gibt eine paginierte Liste aller Teams zurück")
      public RestResponse<Map<String, Object>> getAllTeams(
@@ -112,7 +62,8 @@ public class TeamsRessource {
              @QueryParam("type") TeamType type,
              
              @Parameter(description = "Filtern nach Team-Kategorie")
-             @QueryParam("category") TeamCategory category) {
+             @QueryParam("category") TeamCategory category,
+             @Context UriInfo uriInfo) {
          
          // Teams abrufen
          List<Team> allTeams = teamService.getAllTeams();
@@ -130,31 +81,105 @@ public class TeamsRessource {
                      .collect(Collectors.toList());
          }
          
-         // Paginierung anwenden
          long totalTeams = allTeams.size();
          int totalPages = (int) Math.ceil((double) totalTeams / size);
          
-         // Seitenbereich berechnen
          int fromIndex = page * size;
          List<Team> pagedTeams;
          
          if (fromIndex >= allTeams.size()) {
-             pagedTeams = List.of(); // Leere Liste zurückgeben, wenn Seite außerhalb des Bereichs
+             pagedTeams = List.of(); 
          } else {
              int toIndex = Math.min(fromIndex + size, allTeams.size());
              pagedTeams = allTeams.subList(fromIndex, toIndex);
          }
          
-         // Einfache Map als Antwort zusammenstellen
+         // Team rein
          Map<String, Object> result = new HashMap<>();
          result.put("teams", pagedTeams);
          result.put("page", page);
          result.put("size", size);
          result.put("totalItems", totalTeams);
          result.put("totalPages", totalPages);
+
+        // Jetzt Links
+        Map<String, String> links = new HashMap<>();
+        links.put("self", uriInfo.getRequestUri().toString());
+        
+        // seite 1
+        UriBuilder firstPageUri = uriInfo.getRequestUriBuilder().replaceQueryParam("page", 0);
+        links.put("first", firstPageUri.build().toString());
+        
+        // Seite ende
+        int lastPage = Math.max(0, totalPages - 1);
+        UriBuilder lastPageUri = uriInfo.getRequestUriBuilder().replaceQueryParam("page", lastPage);
+        links.put("last", lastPageUri.build().toString());
+        
+        // nexxxxxt
+        if (page < lastPage) {
+            UriBuilder nextPageUri = uriInfo.getRequestUriBuilder().replaceQueryParam("page", page + 1);
+            links.put("next", nextPageUri.build().toString());
+        }
+        
+        // prev
+        if (page > 0) {
+            UriBuilder prevPageUri = uriInfo.getRequestUriBuilder().replaceQueryParam("page", page - 1);
+            links.put("prev", prevPageUri.build().toString());
+        }
+
+        result.put("_links", links);
          
          return RestResponse.ok(result);
      }
+
+
+     // Post
+
+    @POST
+    @Operation(summary = "Erstellt ein neues Team")
+    @APIResponse(responseCode = "201", description = "Team erfolgreich erstellt")
+    @APIResponse(responseCode = "400", description = "Ungültige Eingabedaten")
+    public RestResponse<Map<String, Object>> createTeam(
+            TeamDTO teamDTO,
+            @Context UriInfo uriInfo) {
+        
+        if (teamDTO == null) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Teamdaten fehlen");
+            return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
+        }
+        
+        // Prüfe auf erforderliche Felder
+        if (teamDTO.getName() == null || teamDTO.getName().trim().isEmpty() || 
+            teamDTO.getType() == null || 
+            teamDTO.getCategory() == null || 
+            teamDTO.getManager() == null) {
+            
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Erforderliche Felder fehlen (Name, Typ, Kategorie oder Manager)");
+            return RestResponse.status(Response.Status.BAD_REQUEST, errorResponse);
+        }
+
+        Team createdTeam = teamService.createTeam(teamDTO);
+        
+        // Link
+        Map<String, Object> response = new HashMap<>();
+        response.put("team", createdTeam);
+        
+        Map<String, String> links = new HashMap<>();
+        String teamUri = uriInfo.getAbsolutePathBuilder()
+                .path(String.valueOf(createdTeam.getId()))
+                .build().toString();
+        
+        links.put("self", teamUri);
+        links.put("all_teams", uriInfo.getAbsolutePath().toString());
+        
+        response.put("_links", links);
+        
+        return RestResponse.status(Response.Status.CREATED, response);
+    }
+
+
 
         
 

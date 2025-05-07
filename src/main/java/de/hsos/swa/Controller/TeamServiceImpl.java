@@ -6,12 +6,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import de.hsos.swa.Boundary.ACL.TeamDTO;
 import de.hsos.swa.Entity.Gender;
 import de.hsos.swa.Entity.Person;
 import de.hsos.swa.Entity.Team;
 import de.hsos.swa.Entity.TeamCategory;
 import de.hsos.swa.Entity.TeamType;
+import jakarta.enterprise.context.ApplicationScoped;
 
+@ApplicationScoped
 public class TeamServiceImpl implements TeamService {
 
     private Map<Long, Team> teamDatabase = new HashMap<>();
@@ -73,10 +76,15 @@ public class TeamServiceImpl implements TeamService {
     }
     
     @Override
-    public Team createTeam(Team team) {
+    public Team createTeam(TeamDTO teamDTO) {
         long id = idCounter.getAndIncrement();
-        team.setId(id);
-        teamDatabase.put(id, team);
+
+        Team team = new Team(id, teamDTO.getType()
+                            ,teamDTO.getName()
+                            ,teamDTO.getCategory()
+                            ,teamDTO.getManager());
+
+        //teamDatabase.put(id, team);
         return team;
     }
 
